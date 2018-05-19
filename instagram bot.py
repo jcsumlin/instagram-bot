@@ -66,7 +66,7 @@ def scan_submissions(posts_replied_to):
                     continue
                 result = "https://imgur.com/a/" + album_id
                 print('\t' + result)
-                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r    [Imgur]("+ result+ ")" + bot_message)
+                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r[Imgur]("+ result+ ")" + bot_message)
                 submission.reply(comment)
                 print('\tSuccess!')
                 posts_replied_to.append(submission.id)
