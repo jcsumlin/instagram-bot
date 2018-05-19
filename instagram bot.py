@@ -16,7 +16,6 @@ import configparser
 import praw
 import re
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
-from PIL import Image, ImageTk
 
 config = configparser.ConfigParser()
 config.read('auth.ini')
@@ -67,7 +66,7 @@ def scan_submissions(posts_replied_to):
                     continue
                 result = "https://imgur.com/a/" + album_id
                 print('\t' + result)
-                comment = str(messages[random.randrange(0, len(messages)-1)] + "\n    [Imgur]("+ result+ ")" + bot_message)
+                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r    [Imgur]("+ result+ ")" + bot_message)
                 submission.reply(comment)
                 print('\tSuccess!')
                 posts_replied_to.append(submission.id)
@@ -87,9 +86,9 @@ def instagramPost(submission):
                 raw_image_url = media['node']['display_url']
                 upload_list.append(raw_image_url)
             elif media['node']['__typename'] == "GraphVideo":
-                video_url = media['node']['video_url']
-#                
-                upload_list.append(video_url)
+                #video_url = media['node']['video_url']
+                #upload_list.append(video_url)
+                1+1
     else:
         raw_image = JSON_data[submission.id]['graphql']['shortcode_media']['display_resources'][2]
         raw_image_url = raw_image['src']
