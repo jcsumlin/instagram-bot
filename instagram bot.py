@@ -31,17 +31,16 @@ messages = ['By the authority of Alpha and Jeep this post has been mirrored',
 reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
                      client_secret=config.get('auth', 'reddit_client_secret'),
                      password=config.get('auth', 'reddit_password'),
-                     user_agent=config.get('auth', 'reddit_user_agent'),
+                     user_agent='Instagram Mirror Bot (Made By u/J_C___)',
                      username=config.get('auth', 'reddit_username'))
 
 
 client_id = config.get('auth', 'client_id')
 client_secret = config.get('auth', 'client_secret')
-client = ImgurClient(client_id, client_secret)
 print("Posting as: ", reddit.user.me())
-SUBREDDIT = "StarVStheForcesofEvil"
-LIMIT = 1000
-album_id = ''
+SUBREDDIT = config.get('auth', 'reddit_subreddit')
+LIMIT = int(config.get('auth', 'reddit_limit'))
+
 if not os.path.isfile("posts_replied_to.txt"):
     posts_replied_to = []
 else:
@@ -50,11 +49,18 @@ else:
         posts_replied_to = posts_replied_to.split("\n")
         posts_replied_to = list(filter(None, posts_replied_to))
 
+'''
+Static variables for bot.
+'''
 bot_message = "\r\r ^(I am a script. If I did something wrong, ) [^(let me know)](/message/compose/?to=J_C___&subject=mirror_bot)"
+album_id = ''
+client = ImgurClient(client_id, client_secret)
 
-def scan_submissions(posts_replied_to):
+
+def scan_submissions():
     """
     Scan the most recent submissions continually.
+    THIS IS THE MAIN DRIVER. REMEMBER TO WEAR A SEAT BELT!
     """
     subreddit = reddit.subreddit(SUBREDDIT)
     while True:
@@ -66,10 +72,11 @@ def scan_submissions(posts_replied_to):
                     continue
                 result = "https://imgur.com/a/" + album_id
                 print('\t' + result)
-                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r[Imgur]("+ result+ ")" + bot_message)
+                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r[Imgur](" + result + ")" + bot_message)
                 submission.reply(comment)
                 print('\tSuccess!')
                 posts_replied_to.append(submission.id)
+                update_files(posts_replied_to)
 
 def instagramPost(submission):
     upload_list = []
@@ -86,8 +93,9 @@ def instagramPost(submission):
                 raw_image_url = media['node']['display_url']
                 upload_list.append(raw_image_url)
             elif media['node']['__typename'] == "GraphVideo":
-                #video_url = media['node']['video_url']
-                #upload_list.append(video_url)
+                # TODO: Add Video functionality
+                # video_url = media['node']['video_url']
+                # upload_list.append(video_url)
                 1+1
     else:
         raw_image = JSON_data[submission.id]['graphql']['shortcode_media']['display_resources'][2]
@@ -100,9 +108,9 @@ def instagramPost(submission):
 def upload_to_imgur(upload_list, username, author, source):
     global album_id
     uploaded = []
-    title="Mirrored Post from r/" + SUBREDDIT
-    description='This is a mirror uploaded by /u/%s, originally made by %s, located at %s' % (username, author, source)
-    fields =  {"title": title, "description": description}
+    title = "Mirrored Post from r/" + SUBREDDIT
+    description = 'This is a mirror uploaded by /u/%s, originally made by %s, located at %s' % (username, author, source)
+    fields = {"title": title, "description": description}
     album_deletehash = {}
     try:
         album = client.create_album(fields)
@@ -126,6 +134,7 @@ def upload_to_imgur(upload_list, username, author, source):
     album_id = album['id']
     return album_id
 
+
 def update_files(posts_replied_to):
     with open("posts_replied_to.txt", "w") as f:
         for x in posts_replied_to:
@@ -133,7 +142,7 @@ def update_files(posts_replied_to):
 
 
 try:
-    scan_submissions(posts_replied_to)
+    scan_submissions()
 except KeyboardInterrupt:
     update_files(posts_replied_to)
-    print('Interrupted')
+    print('Interrupted, files updated')
