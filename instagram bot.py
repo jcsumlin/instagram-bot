@@ -4,8 +4,6 @@ Created on Fri May  4 12:21:38 2018
 
 @author: Chat
 """
-
-
 import os
 import json
 import random
@@ -16,17 +14,20 @@ import configparser
 import praw
 import re
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
-
+import logging
+__author__ = 'jcsumlin'
+__version__ = '0.3'
 config = configparser.ConfigParser()
 config.read('auth.ini')
 
 
 JSON_data = {}
 messages = ['By the authority of Alpha and Jeep this post has been mirrored',
-            'Mirrored to imgur, ‘cuz ain’t nobody got time fo’ Instagram',
+            'Mirrored to Imgur, ‘cuz ain’t nobody got time fo’ Instagram',
             'Oh look I did a thing, give me karma!',
             'That Sure is a Nice Post You Have There ... Sure Would Be A *Shame* If I... Mirrored It!',
-            'Mirrored post from Instagram', 'Hey Listen! ^I mirrored your post']
+            'Mirrored post from Instagram',
+            'Hey Listen! ^(I mirrored your post)']
 
 reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
                      client_secret=config.get('auth', 'reddit_client_secret'),
@@ -37,7 +38,7 @@ reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
 
 client_id = config.get('auth', 'client_id')
 client_secret = config.get('auth', 'client_secret')
-print("Posting as: ", reddit.user.me())
+logging.info("Logged in and posting as: ", reddit.user.me())
 SUBREDDIT = config.get('auth', 'reddit_subreddit')
 LIMIT = int(config.get('auth', 'reddit_limit'))
 
@@ -55,6 +56,7 @@ Static variables for bot.
 bot_message = "\r\r ^(I am a script. If I did something wrong, ) [^(let me know)](/message/compose/?to=J_C___&subject=mirror_bot)"
 album_id = ''
 client = ImgurClient(client_id, client_secret)
+logging.basicConfig(filename='instagram.log', level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
 
 
 def scan_submissions():
@@ -66,24 +68,25 @@ def scan_submissions():
     while True:
         for submission in subreddit.stream.submissions():
             if submission.id not in posts_replied_to and "instagram.com" in submission.url:
-                print("Instagram Image Found!")
+                logging.info("Instagram Image Found!")
                 if instagramPost(submission) is False:
-                    print("\tOops ran into a strange error!")
                     continue
-                result = "https://imgur.com/a/" + album_id
-                print('\t' + result)
-                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r[Imgur](" + result + ")" + bot_message)
+                result = results['link_display']
+                logging.info(result)
+                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r" + result + bot_message)
+                logging.info(comment)
                 submission.reply(comment)
-                print('\tSuccess!')
+                logging.debug('Successfully uploaded and commented')
                 posts_replied_to.append(submission.id)
                 update_files(posts_replied_to)
+                logging.debug("file updated")
+
 
 def instagramPost(submission):
     upload_list = []
     insta_post_url_id = re.search('[p]\W\w+\S\w+', submission.url).group(0)
     insta_post_url = "https://www.instagram.com/" + insta_post_url_id + "/"
     insta_JSON_url = insta_post_url + '?__a=1'
-    print(insta_JSON_url)
     with urllib.request.urlopen(insta_JSON_url) as url:
         data = json.loads(url.read().decode())
         JSON_data[submission.id] = data
@@ -96,7 +99,7 @@ def instagramPost(submission):
                 # TODO: Add Video functionality
                 # video_url = media['node']['video_url']
                 # upload_list.append(video_url)
-                1+1
+                logging.info("Post Contains a video")
     else:
         raw_image = JSON_data[submission.id]['graphql']['shortcode_media']['display_resources'][2]
         raw_image_url = raw_image['src']
@@ -106,33 +109,64 @@ def instagramPost(submission):
 
 
 def upload_to_imgur(upload_list, username, author, source):
-    global album_id
+    """
+    :param upload_list: List of urls you are uploading
+    :param username: Username of the reddit account you're logged in as
+    :param author: Author of the Instagram Post
+    :param source: Link to the reddit post
+    :return:
+    """
+    global results
     uploaded = []
-    title = "Mirrored Post from r/" + SUBREDDIT
-    description = 'This is a mirror uploaded by /u/%s, originally made by %s, located at %s' % (username, author, source)
-    fields = {"title": title, "description": description}
-    album_deletehash = {}
-    try:
-        album = client.create_album(fields)
-    except ImgurClientRateLimitError:
-        print('\tRan into imgur rate limit! %s', client.credits)
-        return None
-    
-    album_deletehash['album'] = album['deletehash']
+    description = 'This is a mirror uploaded by /u/%s, original Instagram post by %s, located at %s' \
+                  % (username, author, source)
+    fields = {"title": "Mirrored Post from r/" + SUBREDDIT, "description": description}
+    config = {}
+    results = {}
+
+    # If there are no images
+    if len(upload_list) == 0:
+        logging.warning('upload_list gave no urls.')
+        return False
+
+    elif len(upload_list) == 1:
+        logging.debug('A single image will be uploaded.')
+        is_album = False
+        config['description'] = description
+    else:
+        logging.debug('An album will be uploaded.')
+        try:
+            album = client.create_album({'description': description})
+        except ImgurClientRateLimitError:
+            logging.error('Ran into imgur rate limit! %s', client.credits)
+            return False
+        except Exception as e:
+            logging.critical('Could not create album! %s' % e)
+            return False
+        config['album'] = album['deletehash']
+        is_album = True
+
+
+    images = []
     for image in upload_list:
         try:
-            uploaded.append(client.upload_from_url(image, config=album_deletehash, anon=True))
+            image = client.upload_from_url(image, config)
+            images.append(image)
+            logging.debug('Uploaded image: %s', str(image))
+            if is_album:
+                results['link_display'] = '[Imgur Album](https://imgur.com/a/%s)  \n' % album['id']
+            else:
+                picture_url = images[0]['link'].replace('http://', 'https://')
+                results['link_display'] = '[Imgur](%s)  \n' % picture_url
         except ImgurClientRateLimitError:
-            print('\tRan into imgur rate limit! %s' % client.credits)
+            logging.error('Ran into imgur rate limit! %s' % client.credits)
             return False
         except ImgurClientError:
-            print("\tRan into an error: %s" % client.credits)
+            logging.error("Ran into an error: %s" % client.credits)
             return False
         except:
-            print("\tRan into an unknown error: %s" % client.credits)
+            logging.error("Ran into an unknown error: %s" % client.credits)
             return False
-    album_id = album['id']
-    return album_id
 
 
 def update_files(posts_replied_to):
@@ -141,8 +175,12 @@ def update_files(posts_replied_to):
             f.write(x + "\n")
 
 
-try:
-    scan_submissions()
-except KeyboardInterrupt:
-    update_files(posts_replied_to)
-    print('Interrupted, files updated')
+if __name__ == '__main__':
+    try:
+        logging.info(' --- STARTING JC\'s BOT --- ')
+        scan_submissions()
+    except KeyboardInterrupt:
+        update_files(posts_replied_to)
+        logging.info('Interrupted, files updated')
+
+
