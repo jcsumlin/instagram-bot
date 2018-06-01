@@ -76,7 +76,7 @@ def scan_submissions():
                 comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r" + result + bot_message)
                 logging.info(comment)
                 reply = submission.reply(comment)
-                reply.mod.distinguish(how='yes', sticky=True)
+                reply.distinguish(how='yes', sticky=True)
                 logging.debug('Successfully uploaded and commented')
                 posts_replied_to.append(submission.id)
                 update_files(posts_replied_to)
