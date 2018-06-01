@@ -74,7 +74,6 @@ def scan_submissions():
                 result = results['link_display']
                 logging.info(result)
                 comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r" + result + bot_message)
-
                 logging.info(comment)
                 reply = submission.reply(comment)
                 reply.distinguish(how='yes', sticky=True)
