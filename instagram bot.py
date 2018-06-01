@@ -38,7 +38,7 @@ reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
 
 client_id = config.get('auth', 'client_id')
 client_secret = config.get('auth', 'client_secret')
-logging.info("Logged in and posting as: ", reddit.user.me())
+logging.info("Logged in and posting as: " + str(reddit.user.me()))
 SUBREDDIT = config.get('auth', 'reddit_subreddit')
 LIMIT = int(config.get('auth', 'reddit_limit'))
 
@@ -74,8 +74,10 @@ def scan_submissions():
                 result = results['link_display']
                 logging.info(result)
                 comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r" + result + bot_message)
+
                 logging.info(comment)
-                submission.reply(comment)
+                reply = submission.reply(comment)
+                reply.distinguish(how='yes', sticky=True)
                 logging.debug('Successfully uploaded and commented')
                 posts_replied_to.append(submission.id)
                 update_files(posts_replied_to)
