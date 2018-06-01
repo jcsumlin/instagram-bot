@@ -178,10 +178,11 @@ def update_files(posts_replied_to):
 
 if __name__ == '__main__':
     try:
-        logging.info(' --- STARTING JC\'s BOT --- ')
+        logging.info(' --- STARTING J_C___\'s BOT --- ')
         scan_submissions()
     except KeyboardInterrupt:
+        logging.info('Interrupted')
+    finally:
         update_files(posts_replied_to)
-        logging.info('Interrupted, files updated')
-
+        logging.info('files updated')
 

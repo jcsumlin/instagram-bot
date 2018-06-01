@@ -100,3 +100,6 @@ ENV/
 *.ini
 *.ini
 *.ini
+auth.ini.J_C___
+*.J_CBot
+auth.ini
