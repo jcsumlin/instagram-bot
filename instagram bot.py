@@ -15,6 +15,7 @@ import praw
 import re
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
 import logging
+from pushbullet import Pushbullet
 __author__ = 'jcsumlin'
 __version__ = '0.3'
 config = configparser.ConfigParser()
@@ -27,7 +28,8 @@ messages = ['By the authority of Alpha and Jeep this post has been mirrored',
             'Oh look I did a thing, give me karma!',
             'That Sure is a Nice Post You Have There ... Sure Would Be A *Shame* If I... Mirrored It!',
             'Mirrored post from Instagram',
-            'Hey Listen! ^(I mirrored your post)']
+            'Hey Listen! ^(I mirrored your post)',
+            'Beep Boop Beep, Mirror Complete!']
 
 reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
                      client_secret=config.get('auth', 'reddit_client_secret'),
@@ -35,7 +37,7 @@ reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
                      user_agent='Instagram Mirror Bot (Made By u/J_C___)',
                      username=config.get('auth', 'reddit_username'))
 
-
+pb = Pushbullet(str(config.get('auth', 'pb_key')))
 client_id = config.get('auth', 'client_id')
 client_secret = config.get('auth', 'client_secret')
 logging.info("Logged in and posting as: " + str(reddit.user.me()))
@@ -179,10 +181,14 @@ def update_files(posts_replied_to):
 if __name__ == '__main__':
     try:
         logging.info(' --- STARTING J_C___\'s BOT --- ')
+        test = 1/0
         scan_submissions()
     except KeyboardInterrupt:
         logging.info('Interrupted')
+    except:
+        logging.critical("uncaught error!")
     finally:
+        push = pb.push_note("SCRIPT FAIL", "J_CBot Instagram Script is Down!")
         update_files(posts_replied_to)
         logging.info('files updated')
 
