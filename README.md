@@ -28,9 +28,11 @@ from pushbullet import Pushbullet
 
 A step by step series of examples that tell you how to get a development env running
 
-Step 1. - Clone the Repo!
-Step 2 - Create Imgur App and Reddit "script"
-Step 3 - Edit the auth.ini.example file in a text editor.
+* Step 1. - Clone the Repo!
+
+* Step 2 - Create Imgur App and Reddit "script"
+
+* Step 3 - Edit the auth.ini.example file in a text editor.
 
 ```
 [auth]
@@ -47,9 +49,9 @@ reddit_limit=limit the number of posts you want to scan
 pb_key=To be notified if the script fails Pusbullet API key
 
 ```
-Step 4 - Save as auth.ini
-Step 5 - Run the script!
+* Step 4 - Save as auth.ini
 
+* Step 5 - Run the script!
 
 
 ## Authors
