@@ -181,7 +181,6 @@ def update_files(posts_replied_to):
 if __name__ == '__main__':
     try:
         logging.info(' --- STARTING J_C___\'s BOT --- ')
-        test = 1/0
         scan_submissions()
     except KeyboardInterrupt:
         logging.info('Interrupted')
