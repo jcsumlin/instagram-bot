@@ -12,12 +12,12 @@ import random
 import re
 import urllib
 import urllib.request
-
+import coloredlogs
 import praw
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
-
-logging.basicConfig(filename='instagram.log',level=logging.DEBUG)
+coloredlogs.install()
+logging.basicConfig(filename='instagram.log',level=logging.INFO)
 from pushbullet import Pushbullet
 __author__ = 'jcsumlin'
 __version__ = '0.3'
@@ -76,11 +76,11 @@ def scan_submissions():
                     continue
                 result = results['link_display']
                 logging.info(result)
-                comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r" + result + bot_message)
+                body = random.choice(messages)
+                comment = str(body + "\r\r" + result + bot_message)
                 logging.info(comment)
-                #reply = submission.reply(comment)
-                #reply.mod.distinguish(how='yes', sticky=True)
-                print(comment)
+                reply = submission.reply(comment)
+                reply.mod.distinguish(how='yes', sticky=True)
                 logging.debug('Successfully uploaded and commented')
                 posts_replied_to.append(submission.id)
                 update_files(posts_replied_to)
@@ -105,7 +105,7 @@ def instagramPost(submission):
                 # TODO: Add Video functionality
                 # video_url = media['node']['video_url']
                 # upload_list.append(video_url)
-                logging.info("Post Contains a video")
+                logging.error("Post Contains a video, skipped")
     else:
         raw_image = JSON_data[submission.id]['graphql']['shortcode_media']['display_resources'][2]
         raw_image_url = raw_image['src']
