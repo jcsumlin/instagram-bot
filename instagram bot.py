@@ -4,17 +4,20 @@ Created on Fri May  4 12:21:38 2018
 
 @author: Chat
 """
-import os
-import json
-import random
-import urllib.request
-import urllib
-from imgurpython import ImgurClient
 import configparser
-import praw
-import re
-from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
+import json
 import logging
+import os
+import random
+import re
+import urllib
+import urllib.request
+
+import praw
+from imgurpython import ImgurClient
+from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
+
+logging.basicConfig(filename='instagram.log',level=logging.DEBUG)
 from pushbullet import Pushbullet
 __author__ = 'jcsumlin'
 __version__ = '0.3'
@@ -58,8 +61,6 @@ Static variables for bot.
 bot_message = "\r\r ^(I am a script. If I did something wrong, ) [^(let me know)](/message/compose/?to=J_C___&subject=mirror_bot)"
 album_id = ''
 client = ImgurClient(client_id, client_secret)
-logging.basicConfig(filename='instagram.log', level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
-
 
 def scan_submissions():
     """
@@ -77,8 +78,9 @@ def scan_submissions():
                 logging.info(result)
                 comment = str(messages[random.randrange(0, len(messages)-1)] + "\r\r" + result + bot_message)
                 logging.info(comment)
-                reply = submission.reply(comment)
-                reply.mod.distinguish(how='yes', sticky=True)
+                #reply = submission.reply(comment)
+                #reply.mod.distinguish(how='yes', sticky=True)
+                print(comment)
                 logging.debug('Successfully uploaded and commented')
                 posts_replied_to.append(submission.id)
                 update_files(posts_replied_to)
@@ -87,8 +89,9 @@ def scan_submissions():
 
 def instagramPost(submission):
     upload_list = []
-    insta_post_url_id = re.search('[p]\W\w+\S\w+', submission.url).group(0)
-    insta_post_url = "https://www.instagram.com/" + insta_post_url_id + "/"
+    logging.info(submission.url)
+    insta_post_url = re.search('https?:\/\/www\.?instagram\.com\/p\/([a-zA-Z1-9-]+)\/', submission.url).group(0)
+    logging.info(insta_post_url)
     insta_JSON_url = insta_post_url + '?__a=1'
     with urllib.request.urlopen(insta_JSON_url) as url:
         data = json.loads(url.read().decode())
@@ -184,10 +187,12 @@ if __name__ == '__main__':
         scan_submissions()
     except KeyboardInterrupt:
         logging.info('Interrupted')
-    except:
-        logging.critical("uncaught error!")
+    except Exception as e:
+        logging.critical("uncaught error! %s" % e)
     finally:
         push = pb.push_note("SCRIPT FAIL", "J_CBot Instagram Script is Down!")
         update_files(posts_replied_to)
         logging.info('files updated')
+
+
 
