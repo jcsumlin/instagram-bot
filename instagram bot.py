@@ -17,7 +17,7 @@ import praw
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
 coloredlogs.install()
-logging.basicConfig(filename='instagram.log',level=logging.INFO)
+logging.basicConfig(filename='instagram.log',level=logging.DEBUG)
 from pushbullet import Pushbullet
 __author__ = 'jcsumlin'
 __version__ = '0.3'
@@ -87,7 +87,7 @@ def scan_submissions():
                 logging.debug("file updated")
 
 
-def instagramPost(submission):
+def instagramPost(submission: object) -> object:
     upload_list = []
     logging.info(submission.url)
     insta_post_url = re.search('https?:\/\/www\.?instagram\.com\/p\/([a-zA-Z1-9-]+)\/', submission.url).group(0)
@@ -123,7 +123,6 @@ def upload_to_imgur(upload_list, username, author, source):
     :return:
     """
     global results
-    uploaded = []
     description = 'This is a mirror uploaded by /u/%s, original Instagram post by %s, located at %s' \
                   % (username, author, source)
     fields = {"title": "Mirrored Post from r/" + SUBREDDIT, "description": description}
@@ -134,7 +133,7 @@ def upload_to_imgur(upload_list, username, author, source):
     if len(upload_list) == 0:
         logging.warning('upload_list gave no urls.')
         return False
-
+    # If there is only one image
     elif len(upload_list) == 1:
         logging.debug('A single image will be uploaded.')
         is_album = False
@@ -143,8 +142,8 @@ def upload_to_imgur(upload_list, username, author, source):
         logging.debug('An album will be uploaded.')
         try:
             album = client.create_album({'description': description})
-        except ImgurClientRateLimitError:
-            logging.error('Ran into imgur rate limit! %s', client.credits)
+        except ImgurClientRateLimitError as e:
+            logging.error('Ran into imgur rate limit! %s' % e)
             return False
         except Exception as e:
             logging.critical('Could not create album! %s' % e)
@@ -165,7 +164,7 @@ def upload_to_imgur(upload_list, username, author, source):
                 picture_url = images[0]['link'].replace('http://', 'https://')
                 results['link_display'] = '[Imgur](%s)  \n' % picture_url
         except ImgurClientRateLimitError:
-            logging.error('Ran into imgur rate limit! %s' % client.credits)
+            logging.error('Ran into Imgur rate limit! %s' % client.credits)
             return False
         except ImgurClientError:
             logging.error("Ran into an error: %s" % client.credits)
@@ -189,8 +188,8 @@ if __name__ == '__main__':
         logging.info('Interrupted')
     except Exception as e:
         logging.critical("uncaught error! %s" % e)
-    finally:
-        push = pb.push_note("SCRIPT FAIL", "J_CBot Instagram Script is Down!")
+    finally:            
+        push = pb.push_note("SCRIPT Down", "J_CBot Instagram Script is Down!")
         update_files(posts_replied_to)
         logging.info('files updated')
 
