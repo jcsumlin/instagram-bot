@@ -79,10 +79,11 @@ def scan_submissions():
                 body = random.choice(messages)
                 comment = str(body + "\r\r" + result + bot_message)
                 logging.info(comment)
-                reply = submission.reply(comment)
-                reply.mod.distinguish(how='yes', sticky=True)
+                #reply = submission.reply(comment)
+                #reply.mod.distinguish(how='yes', sticky=True)
+                print(comment)
                 logging.debug('Successfully uploaded and commented')
-                posts_replied_to.append(submission.id)
+                #posts_replied_to.append(submission.id)
                 update_files(posts_replied_to)
                 logging.debug("file updated")
 
@@ -90,7 +91,7 @@ def scan_submissions():
 def instagramPost(submission: object) -> object:
     upload_list = []
     logging.info(submission.url)
-    insta_post_url = re.search('https?:\/\/www\.?instagram\.com\/p\/([a-zA-Z1-9-]+)\/', submission.url).group(0)
+    insta_post_url = re.search('https?:\/\/w?w?w?\.?instagram\.com\/p\/([a-zA-Z0-9-]+)\/', submission.url).group(0)
     logging.info(insta_post_url)
     insta_JSON_url = insta_post_url + '?__a=1'
     with urllib.request.urlopen(insta_JSON_url) as url:
