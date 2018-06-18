@@ -10,12 +10,15 @@ import logging
 import os
 import random
 import re
+import time
 import urllib
 import urllib.request
+
 import coloredlogs
 import praw
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
+
 coloredlogs.install()
 logging.basicConfig(filename='instagram.log',level=logging.DEBUG)
 from pushbullet import Pushbullet
@@ -187,6 +190,10 @@ if __name__ == '__main__':
         scan_submissions()
     except KeyboardInterrupt:
         logging.info('Interrupted')
+    except (AttributeError, praw.errors.PRAWException):
+        logging.warning("PRAW encountered an error, waiting 30s before trying again.")
+        time.sleep(30)
+        pass
     except Exception as e:
         logging.critical("uncaught error! %s" % e)
     finally:            
