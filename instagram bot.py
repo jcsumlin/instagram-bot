@@ -15,15 +15,15 @@ import urllib
 import urllib.request
 
 import coloredlogs
+coloredlogs.install()
 import praw
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientRateLimitError, ImgurClientError
 
-coloredlogs.install()
-logging.basicConfig(filename='instagram.log',level=logging.DEBUG)
+logging.basicConfig(filename='instagram.log', level=logging.DEBUG)
 from pushbullet import Pushbullet
 __author__ = 'jcsumlin'
-__version__ = '0.3'
+__version__ = '0.4'
 config = configparser.ConfigParser()
 config.read('auth.ini')
 
@@ -46,7 +46,6 @@ reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
 pb = Pushbullet(str(config.get('auth', 'pb_key')))
 client_id = config.get('auth', 'client_id')
 client_secret = config.get('auth', 'client_secret')
-logging.info("Logged in and posting as: " + str(reddit.user.me()))
 SUBREDDIT = config.get('auth', 'reddit_subreddit')
 LIMIT = int(config.get('auth', 'reddit_limit'))
 
@@ -187,6 +186,7 @@ def update_files(posts_replied_to):
 if __name__ == '__main__':
     try:
         logging.info(' --- STARTING J_C___\'s BOT --- ')
+        logging.info("Logged in and posting as: " + str(reddit.user.me()))
         scan_submissions()
     except KeyboardInterrupt:
         logging.info('Interrupted')
