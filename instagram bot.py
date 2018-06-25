@@ -92,9 +92,9 @@ def scan_submissions():
 
 def instagramPost(submission: object) -> object:
     upload_list = []
-    logging.info(submission.url)
+    logging.info("Post URL: %s" % submission.url)
     insta_post_url = re.search('https?:\/\/w?w?w?\.?instagram\.com\/p\/([a-zA-Z0-9-_]+)\/', submission.url).group(0)
-    logging.info(insta_post_url)
+    logging.info("REGEX URL: %s" % insta_post_url)
     insta_JSON_url = insta_post_url + '?__a=1'
     with urllib.request.urlopen(insta_JSON_url) as url:
         data = json.loads(url.read().decode())
