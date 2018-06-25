@@ -191,6 +191,7 @@ if __name__ == '__main__':
             scan_submissions()
         except KeyboardInterrupt:
             logging.info('Interrupted')
+            exit()
         except Exception as e:
             logging.critical("Uncaught error: %s" % e)
             time.sleep(30)
