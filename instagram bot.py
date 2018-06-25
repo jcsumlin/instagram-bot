@@ -93,7 +93,7 @@ def scan_submissions():
 def instagramPost(submission: object) -> object:
     upload_list = []
     logging.info(submission.url)
-    insta_post_url = re.search('https?:\/\/w?w?w?\.?instagram\.com\/p\/([a-zA-Z0-9-]+)\/', submission.url).group(0)
+    insta_post_url = re.search('https?:\/\/w?w?w?\.?instagram\.com\/p\/([a-zA-Z0-9-_]+)\/', submission.url).group(0)
     logging.info(insta_post_url)
     insta_JSON_url = insta_post_url + '?__a=1'
     with urllib.request.urlopen(insta_JSON_url) as url:
@@ -184,20 +184,21 @@ def update_files(posts_replied_to):
 
 
 if __name__ == '__main__':
-    try:
-        logging.info(' --- STARTING J_C___\'s BOT --- ')
-        logging.info("Logged in and posting as: " + str(reddit.user.me()))
-        scan_submissions()
-    except KeyboardInterrupt:
-        logging.info('Interrupted')
-    except Exception as e:
-        logging.critical("Uncaught error: %s" % e)
-        time.sleep(30)
-        pass
-    finally:            
-        push = pb.push_note("SCRIPT Down", "J_CBot Instagram Script is Down!")
-        update_files(posts_replied_to)
-        logging.info('files updated')
+    while True:
+        try:
+            logging.info(' --- STARTING J_C___\'s BOT --- ')
+            logging.info("Logged in and posting as: " + str(reddit.user.me()))
+            scan_submissions()
+        except KeyboardInterrupt:
+            logging.info('Interrupted')
+        except Exception as e:
+            logging.critical("Uncaught error: %s" % e)
+            time.sleep(30)
+            pass
+        finally:
+            push = pb.push_note("SCRIPT Down", "J_CBot Instagram Script is Down!")
+            update_files(posts_replied_to)
+            logging.info('files updated')
 
 
 
