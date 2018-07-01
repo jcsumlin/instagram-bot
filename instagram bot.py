@@ -13,7 +13,7 @@ import re
 import time
 import urllib
 import urllib.request
-
+from datetime import datetime
 import coloredlogs
 coloredlogs.install()
 import praw
@@ -71,7 +71,14 @@ def scan_submissions():
     subreddit = reddit.subreddit(SUBREDDIT)
     while True:
         for submission in subreddit.stream.submissions():
-            if submission.id not in posts_replied_to and "instagram.com" in submission.url:
+            if submission.id not in posts_replied_to and "cdninstagram.com" in submission.url:
+                logging.info("Direct Instagram Image Found!")
+                submission.reply("This picture has been directly linked from Instagram, please make sure to credit the artist properly!" + bot_message)
+                logging.info("Comment left successfully")
+                posts_replied_to.append(submission.id)
+                update_files(posts_replied_to)
+                logging.debug("file updated")
+            elif submission.id not in posts_replied_to and "instagram.com" in submission.url:
                 logging.info("Instagram Image Found!")
                 if instagramPost(submission) is False:
                     continue
@@ -183,22 +190,24 @@ def update_files(posts_replied_to):
 
 
 if __name__ == '__main__':
-    while True:
-        try:
-            logging.info(' --- STARTING J_C___\'s BOT --- ')
-            logging.info("Logged in and posting as: " + str(reddit.user.me()))
-            scan_submissions()
-        except KeyboardInterrupt:
-            logging.info('Interrupted')
-            exit()
-        except Exception as e:
-            logging.critical("Uncaught error: %s" % e)
-            time.sleep(30)
-            pass
-        finally:
-            push = pb.push_note("SCRIPT Down", "J_CBot Instagram Script is Down!")
-            update_files(posts_replied_to)
-            logging.info('files updated')
+    try:
+        while True:
+            try:
+                logging.info(' --- STARTING J_C___\'s BOT --- ')
+                logging.info("Logged in and posting as: " + str(reddit.user.me()))
+                scan_submissions()
+            except KeyboardInterrupt:
+                logging.info('Interrupted')
+                exit()
+            except Exception as e:
+                logging.critical("Uncaught error: %s" % e)
+                time.sleep(30)
+                pass
+            finally:
+                update_files(posts_replied_to)
+                logging.info('files updated')
+    finally:
+        push = pb.push_note("SCRIPT Down", "J_CBot Instagram Script is Down!")
 
 
 
