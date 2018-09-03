@@ -29,12 +29,18 @@ config.read('auth.ini')
 
 
 JSON_data = {}
-messages = ['Mirrored to Imgur, ‘cuz ain’t nobody got time fo’ Instagram',
+messages = ['By the authority of Alpha and Jeep this post has been mirrored',
+            'Mirrored to imgur, ‘cuz ain’t nobody got time fo’ Instagram',
             'Oh look I did a thing, give me karma!',
-            'That Sure is a Nice Post You Have There ... Sure Would Be A *Shame* If I... **Mirrored It!**',
-            'Mirrored post from Instagram',
-            'Hey Listen! ^I ^mirrored ^your ^post',
-            'Beep Boop Beep, Mirror Complete!']
+            'That Sure is a Nice Post You Have There ... Sure Would Be A *Shame* If I... Mirrored It!',
+            'Mirrored post from Instagram', 'Hey Listen! ^I mirrored your post',
+            'MY BOI YOU JUST GOT MIRRORED!!! *airhorns*',
+            'Mirror powers, activate!',
+            'You stare into the mirror. The mirror stares back.',
+            'This post was mirrored, and so is this message! egassem siht si os dna, derorrim saw tsop sihT',
+            'Mirror mirror in the post, who’s the bot that’s loved the most?',
+            'My name is J_CBot and I’m here to say, \r\rI’m passing out mirrors in a major way!',
+            'J_CBot used Mirror! It\'s super effective!']
 
 reddit = praw.Reddit(client_id=config.get('auth', 'reddit_client_id'),
                      client_secret=config.get('auth', 'reddit_client_secret'),
